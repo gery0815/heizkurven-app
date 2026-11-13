@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0d1117">
+  <meta name="description" content="Heizkurven vergleichen – mehrere Kurven konfigurieren und lokal speichern.">
+  <title>Heizkurven-Vergleich</title>
+  <style>
+    :root{color-scheme:dark;--bg:#0d1117;--panel:#151d24;--panel2:#1a252c;--border:#2b3942;--text:#f0f6f7;--muted:#9cabb4;--accent:#2ed3bb;--focus:#8ae5df}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible{outline:2px solid var(--focus);outline-offset:3px}
+    .wrap{max-width:1040px;margin:auto;padding:24px 16px 48px}header{display:flex;gap:16px;justify-content:space-between;align-items:center;margin-bottom:22px}h1{margin:0;font-size:clamp(1.55rem,4vw,2.25rem);letter-spacing:-.03em}header p{color:var(--muted);margin:4px 0 0;font-size:.91rem}.status{font-size:.78rem;color:var(--accent);white-space:nowrap}
+    .toolbar{display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap;margin-bottom:15px}.toolbar h2{margin:0;font-size:1rem;font-weight:600}.toolbar .actions{display:flex;gap:8px;flex-wrap:wrap}.btn{border:1px solid var(--border);background:var(--panel2);color:var(--text);padding:9px 12px;border-radius:10px;min-height:40px}.btn:hover{border-color:#6c949b}.btn.primary{background:#137c74;border-color:#239b90;color:#fff;font-weight:600}.btn.primary:hover{background:#159186}.btn.danger{color:#ffb2b2}.btn.small{padding:4px 9px;min-height:34px}
+    .curves{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px;margin-bottom:18px}.curve{background:var(--panel);border:1px solid var(--border);border-top:3px solid var(--curve);border-radius:14px;padding:14px;min-width:0}.curve-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.curve-name{min-width:0;flex:1;background:transparent;border:1px solid transparent;border-radius:6px;color:var(--text);padding:5px 4px;font-size:1rem;font-weight:650}.curve-name:hover,.curve-name:focus{border-color:var(--border)}.remove{border:0;background:transparent;color:var(--muted);font-size:1.3rem;padding:0 6px;line-height:1.5}.remove:hover{color:#ffaaaa}.setting{margin-top:10px}.setting-head{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:7px}.setting-head label{font-size:.83rem;color:var(--muted)}.value{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}.stepper{display:grid;grid-template-columns:42px 1fr 42px;gap:8px;align-items:center}.stepper button{min-height:38px;border-radius:9px;background:var(--panel2);color:var(--text);border:1px solid var(--border);font-size:1.2rem}.stepper button:disabled{opacity:.3;cursor:not-allowed}.stepper input{width:100%;accent-color:var(--curve);cursor:pointer;min-width:0}.curve-foot{display:flex;align-items:center;gap:8px;margin-top:14px;color:var(--muted);font-size:.8rem}.color-input{width:32px;height:30px;padding:2px;border:1px solid var(--border);border-radius:6px;background:transparent;cursor:pointer}
+    .panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:16px}.panel h2{margin:0;font-size:1rem}.chart-title{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:6px}.axis-caption,.note{color:var(--muted);font-size:.8rem}.chart-area{position:relative}.plot{width:100%;height:auto;display:block;overflow:visible;touch-action:pan-y}.chart-tooltip{position:absolute;z-index:2;pointer-events:none;min-width:155px;max-width:min(260px,85vw);padding:9px 11px;border:1px solid #465a64;background:#101b22f2;color:var(--text);box-shadow:0 5px 18px #0009;border-radius:9px;font-size:.8rem;line-height:1.5;transform:translate(-50%,-100%)}.chart-tooltip[hidden]{display:none}.tooltip-row{display:flex;align-items:center;justify-content:space-between;gap:14px}.tooltip-name{display:flex;align-items:center;gap:6px;min-width:0}.tooltip-name span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tooltip-value{white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:700}.tooltip-head{font-weight:700;margin-bottom:5px;color:#d6e4e8}.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:4px}.legend span{display:flex;align-items:center;gap:6px;font-size:.82rem;color:var(--muted)}.swatch{width:20px;height:3px;border-radius:2px;display:inline-block}.empty{color:var(--muted);padding:26px 4px;text-align:center}.table-wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;min-width:530px}th,td{padding:10px 11px;text-align:center;border-bottom:1px solid var(--border);white-space:nowrap}th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--panel)}thead th{font-size:.79rem;color:var(--muted);font-weight:600}tbody tr:last-child td{border-bottom:0}.line-id{display:inline-flex;align-items:center;gap:8px;font-weight:600}.dot{display:inline-block;width:9px;height:9px;border-radius:50%}.note{margin:12px 0 0;line-height:1.6}.footer{color:var(--muted);font-size:.8rem;line-height:1.6}.footer code{color:var(--text)}
+    @media(max-width:650px){.wrap{padding:17px 12px 36px}header{align-items:flex-start}.status{display:none}.panel{padding:12px}.curves{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.curve{padding:10px}.curve-name{font-size:.9rem}.setting-head{display:block}.setting-head label{display:block}.setting-head .value{display:block;margin:2px 0 6px}.stepper{grid-template-columns:32px 1fr 32px;gap:3px}.stepper button{min-height:36px}.curve-foot{margin-top:9px}th,td{padding:9px 7px}}
+    @media(max-width:340px){.curves{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header><div><h1>Heizkurven-Vergleich</h1><p>Vorlauftemperatur bei verschiedenen Außentemperaturen</p></div><span class="status" id="status" role="status" aria-live="polite">Lokal gespeichert</span></header>
+    <div class="toolbar"><h2>Meine Heizkurven</h2><div class="actions"><button id="reset" class="btn" type="button">Zurücksetzen</button><button id="add" class="btn primary" type="button">＋ Kurve hinzufügen</button></div></div>
+    <section id="curves" class="curves" aria-label="Heizkurven konfigurieren"></section>
+    <section class="panel"><div class="chart-title"><h2>Heizkurven</h2><span class="axis-caption">Vorlauf (°C) ↑ · Außentemperatur (°C) →</span></div><div id="chart" class="chart-area"></div><div class="legend" id="legend"></div></section>
+    <section class="panel"><h2>Wertevergleich</h2><p class="axis-caption">Spalten: Außentemperatur · Zeilen: Vorlauftemperatur</p><div id="comparison" class="table-wrap"></div></section>
+    <footer class="footer">Empirische Näherung: <code>T<sub>VL</sub> = T<sub>Wunsch</sub> + 2,8 · HK<sup>0,8</sup> · max(0, T<sub>Wunsch</sub> − T<sub>außen</sub>)<sup>0,75</sup></code>.<br>Keine offizielle Vaillant-Reglerformel. Heizgrenze, Mindest-/Maximalvorlauf und Raumaufschaltung werden nicht berücksichtigt. Alle Einstellungen bleiben ausschließlich im <code>localStorage</code> dieses Browsers.</footer>
+  </main>
+  <script>
+    'use strict';
+    const STORAGE_KEY = 'heizkurven-vergleich-v1';
+    const PALETTE = ['#31d6d3','#8bea98','#ffba68','#b79bff','#ff89ae','#75b9ff','#f4dc79'];
+    const OUTSIDE = [15,10,5,0,-5,-10,-15];
+    const $ = id => document.getElementById(id);
+    const defaults = () => [
+      {id:1,name:'Kurve A',wish:22.5,slope:0.35,color:PALETTE[0]},
+      {id:2,name:'Kurve B',wish:21,slope:0.55,color:PALETTE[1]}
+    ];
+    const clamp=(x,min,max)=>Math.min(max,Math.max(min,x));
+    const round=(x,n)=>Number(x.toFixed(n));
+    const format=(x,d=1)=>x.toLocaleString('de-AT',{minimumFractionDigits:d,maximumFractionDigits:d});
+    function validColor(c){return typeof c==='string'&&/^#[0-9a-fA-F]{6}$/.test(c)}
+    function sanitize(x,index){return {id:Number.isSafeInteger(x?.id)?x.id:index+1,name:String(x?.name??`Kurve ${index+1}`).slice(0,35),wish:clamp(Number(x?.wish)||21,15,26),slope:clamp(Number(x?.slope)||0.35,0.1,1.5),color:validColor(x?.color)?x.color:PALETTE[index%PALETTE.length]}}
+    function load(){try{const raw=JSON.parse(localStorage.getItem(STORAGE_KEY));if(Array.isArray(raw))return raw.slice(0,20).map(sanitize)}catch(e){console.warn('Lokale Daten konnten nicht gelesen werden.',e)}return defaults()}
+    let curves=load();let nextId=Math.max(0,...curves.map(c=>c.id))+1;
+    const escapeHtml=x=>String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    function calc(t,c){return c.wish+2.8*Math.pow(c.slope,0.8)*Math.pow(Math.max(0,c.wish-t),0.75)}
+    function store(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(curves));$('status').textContent='Lokal gespeichert'}catch(e){$('status').textContent='Speichern nicht möglich';console.warn(e)}}
+    function renderControls(){
+      $('curves').innerHTML=curves.map(c=>`<article class="curve" style="--curve:${c.color}" data-id="${c.id}">
+        <div class="curve-head"><input class="curve-name" aria-label="Name der Kurve" data-key="name" maxlength="35" value="${escapeHtml(c.name)}"><button class="remove" data-action="remove" aria-label="${escapeHtml(c.name)} entfernen" title="Kurve entfernen">×</button></div>
+        <div class="setting"><div class="setting-head"><label>Wunschtemperatur</label><span class="value" data-display="wish">${format(c.wish)} °C</span></div><div class="stepper"><button type="button" data-action="wish-minus" aria-label="Wunschtemperatur senken">−</button><input type="range" aria-label="Wunschtemperatur ${escapeHtml(c.name)}" data-key="wish" min="15" max="26" step="0.5" value="${c.wish}"><button type="button" data-action="wish-plus" aria-label="Wunschtemperatur erhöhen">+</button></div></div>
+        <div class="setting"><div class="setting-head"><label>Heizkurve</label><span class="value" data-display="slope">${format(c.slope,2)}</span></div><div class="stepper"><button type="button" data-action="slope-minus" aria-label="Heizkurve senken">−</button><input type="range" aria-label="Heizkurve ${escapeHtml(c.name)}" data-key="slope" min="0.1" max="1.5" step="0.05" value="${c.slope}"><button type="button" data-action="slope-plus" aria-label="Heizkurve erhöhen">+</button></div></div>
+        <div class="curve-foot"><input class="color-input" data-key="color" type="color" aria-label="Farbe ${escapeHtml(c.name)}" value="${c.color}"><span>Farbe · HK-Schritte 0,05</span></div>
+      </article>`).join('');
+    }
+    function renderChart(){
+      const el=$('chart');if(!curves.length){el.innerHTML='<p class="empty">Füge eine Heizkurve hinzu, um sie zu sehen.</p>';$('legend').innerHTML='';return}
+      const W=760,H=310,L=48,R=20,T=20,B=40,plotW=W-L-R,plotH=H-T-B;
+      const values=curves.flatMap(c=>Array.from({length:41},(_,i)=>calc(20-i,c)));
+      const minY=Math.max(0,Math.floor((Math.min(...values)-4)/5)*5);
+      const maxY=Math.max(minY+10,Math.ceil((Math.max(...values)+4)/5)*5);
+      const x=t=>L+(20-t)/40*plotW;
+      const y=v=>T+(maxY-v)/(maxY-minY)*plotH;
+      let svg=`<svg class="plot" viewBox="0 0 ${W} ${H}" role="img" aria-label="Vergleich von ${curves.length} Heizkurven. Außentemperatur von plus 20 Grad links bis minus 20 Grad rechts.">`;
+      for(let k=0;k<=5;k++){const v=minY+(maxY-minY)*k/5;svg+=`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="#52606b" stroke-opacity=".22"/><text x="${L-10}" y="${y(v)+4}" fill="#93a6b0" font-size="12" text-anchor="end">${Math.round(v)}°</text>`}
+      for(let t=20;t>=-20;t-=5)svg+=`<line x1="${x(t)}" x2="${x(t)}" y1="${T}" y2="${H-B}" stroke="#52606b" stroke-opacity=".25"/><text x="${x(t)}" y="${H-12}" fill="#a4b3bd" font-size="12" text-anchor="middle">${t>0?'+':''}${t}°</text>`;
+      curves.forEach(c=>{
+        const pts=Array.from({length:81},(_,i)=>{const t=20-i*.5;return `${x(t).toFixed(1)},${y(calc(t,c)).toFixed(1)}`}).join(' ');
+        svg+=`<polyline points="${pts}" fill="none" stroke="${c.color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`;
+        for(let t=20;t>=-20;t-=5)svg+=`<circle cx="${x(t)}" cy="${y(calc(t,c))}" r="3" fill="${c.color}" stroke="#10171d" stroke-width="1.5"/>`;
+      });
+      svg+=`<g id="hover-marker" visibility="hidden"><line id="hover-line" y1="${T}" y2="${H-B}" stroke="#c9dce2" stroke-opacity=".7" stroke-width="1" stroke-dasharray="4 4"/><g id="hover-dots"></g></g>`;
+      // Transparentes Trefferfeld: Auch zwischen den gezeichneten Punkten ist Hover möglich.
+      svg+=`<rect id="hover-target" x="${L}" y="${T}" width="${plotW}" height="${plotH}" fill="transparent" tabindex="0" role="slider" aria-label="Außentemperatur für Werteanzeige" aria-valuemin="-20" aria-valuemax="20" aria-valuenow="0" aria-valuetext="0 Grad Celsius"/>`;
+      svg+='</svg><div id="chart-tooltip" class="chart-tooltip" role="status" hidden></div>';el.innerHTML=svg;
+      const target=el.querySelector('#hover-target');
+      const marker=el.querySelector('#hover-marker');
+      const line=el.querySelector('#hover-line');
+      const dots=el.querySelector('#hover-dots');
+      const tooltip=el.querySelector('#chart-tooltip');
+      let selected=0;
+      function showAt(t){
+        selected=clamp(Math.round(t),-20,20);
+        const px=x(selected);
+        marker.setAttribute('visibility','visible');
+        line.setAttribute('x1',px);line.setAttribute('x2',px);
+        dots.innerHTML=curves.map(c=>`<circle cx="${px}" cy="${y(calc(selected,c))}" r="5" fill="${c.color}" stroke="#10171d" stroke-width="2"/>`).join('');
+        tooltip.innerHTML=`<div class="tooltip-head">${selected>0?'+':''}${selected} °C außen</div>`+curves.map(c=>`<div class="tooltip-row"><div class="tooltip-name"><i class="dot" style="background:${c.color}"></i><span>${escapeHtml(c.name)}</span></div><span class="tooltip-value">${format(calc(selected,c))} °C</span></div>`).join('');
+        tooltip.hidden=false;
+        const box=el.getBoundingClientRect();
+        const plotX=px/W*box.width;
+        tooltip.style.left=`${clamp(plotX,tooltip.offsetWidth/2+4,box.width-tooltip.offsetWidth/2-4)}px`;
+        tooltip.style.top=`${Math.max(tooltip.offsetHeight+10,Math.min(...curves.map(c=>y(calc(selected,c))))/H*box.width-8)}px`;
+        target.setAttribute('aria-valuenow',selected);
+        target.setAttribute('aria-valuetext',`${selected} Grad Celsius`);
+      }
+      target.addEventListener('pointermove',e=>{
+        const rect=el.querySelector('svg').getBoundingClientRect();
+        const pos=(e.clientX-rect.left)/rect.width*W;
+        showAt(20-(pos-L)/plotW*40);
+      });
+      target.addEventListener('pointerleave',()=>{marker.setAttribute('visibility','hidden');tooltip.hidden=true});
+      target.addEventListener('focus',()=>showAt(selected));
+      target.addEventListener('blur',()=>{marker.setAttribute('visibility','hidden');tooltip.hidden=true});
+      target.addEventListener('keydown',e=>{
+        if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){
+          e.preventDefault();
+          showAt(e.key==='Home'?20:e.key==='End'?-20:selected+(e.key==='ArrowLeft'?1:-1));
+        }
+      });
+      $('legend').innerHTML=curves.map(c=>`<span><i class="swatch" style="background:${c.color}"></i>${escapeHtml(c.name)} (${format(c.wish)}° / HK ${format(c.slope,2)})</span>`).join('');
+    }
+    function renderTable(){if(!curves.length){$('comparison').innerHTML='<p class="empty">Noch keine Kurven vorhanden.</p>';return}
+      $('comparison').innerHTML=`<table><thead><tr><th>Kurve</th>${OUTSIDE.map(t=>`<th>${t>0?'+':''}${t}°</th>`).join('')}</tr></thead><tbody>${curves.map(c=>`<tr><td><span class="line-id"><i class="dot" style="background:${c.color}"></i>${escapeHtml(c.name)}</span></td>${OUTSIDE.map(t=>`<td title="${format(calc(t,c))} °C">${Math.round(calc(t,c))}°</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+    }
+    function redraw(){renderControls();renderChart();renderTable();store()}
+    $('curves').addEventListener('input',e=>{
+      const card=e.target.closest('[data-id]');if(!card)return;
+      const c=curves.find(c=>c.id===Number(card.dataset.id));if(!c)return;
+      const key=e.target.dataset.key;
+      if(key==='wish')c.wish=Number(e.target.value);
+      else if(key==='slope')c.slope=Number(e.target.value);
+      else if(key==='name')c.name=e.target.value;
+      else if(key==='color')c.color=e.target.value;
+      else return;
+      if(key==='wish'||key==='slope')card.querySelector(`[data-display="${key}"]`).textContent=key==='wish'?`${format(c.wish)} °C`:format(c.slope,2);
+      if(key==='color')card.style.setProperty('--curve',c.color);
+      renderChart();renderTable();store();
+    });
+    $('curves').addEventListener('click',e=>{
+      const btn=e.target.closest('button[data-action]');if(!btn)return;
+      const card=btn.closest('[data-id]');const id=Number(card.dataset.id);
+      const c=curves.find(c=>c.id===id);if(!c)return;
+      const action=btn.dataset.action;
+      if(action==='remove'){curves=curves.filter(c=>c.id!==id);redraw();return}
+      const [key,dir]=action.split('-');const step=key==='slope'?.05:.5;
+      const min=key==='slope'?.1:15,max=key==='slope'?1.5:26;
+      c[key]=round(clamp(c[key]+(dir==='plus'?step:-step),min,max),2);
+      redraw();
+    });
+    $('add').addEventListener('click',()=>{if(curves.length>=20){alert('Maximal 20 Heizkurven.');return}const n=nextId++;curves.push({id:n,name:`Kurve ${n}`,wish:21,slope:.35,color:PALETTE[(n-1)%PALETTE.length]});redraw()});
+    $('reset').addEventListener('click',()=>{if(!confirm('Alle Kurven auf die Beispielwerte zurücksetzen?'))return;curves=defaults();nextId=3;redraw()});
+    redraw();
+  </script>
+</body>
+</html>
